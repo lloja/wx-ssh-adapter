@@ -9,6 +9,10 @@ A modern, high-performance **IBM webMethods Integration Server Adapter** built o
 ## Table of Contents
 - [Features & Capabilities](#features--capabilities)
 - [System Requirements](#system-requirements)
+- [Development & Test Environment Setup](#development--test-environment-setup)
+  - [1. IBM webMethods Service Designer](#1-ibm-webmethods-service-designer)
+  - [2. Apache Maven & Java SDK Configuration](#2-apache-maven--java-sdk-configuration)
+  - [3. Local OpenSSH Server with Podman](#3-local-openssh-server-with-podman)
 - [Installation & Deployment](#installation--deployment)
   - [Deploying the Pre-Built Package](#deploying-the-pre-built-package)
   - [Building from Source](#building-from-source)
@@ -52,7 +56,124 @@ A modern, high-performance **IBM webMethods Integration Server Adapter** built o
 
 * **Platform**: IBM webMethods Integration Server / Microservices Runtime / webMethods Service Designer (versions 10.x, 11.x, or 12.x).
 * **Runtime Java**: Java 17 or Java 21 (IBM Semeru JDK or Oracle/OpenJDK).
-* **Build Tools (optional)**: Maven 3.9+ and JDK 21 (if building from source).
+* **Build Tools (optional)**: Apache Maven 3.9+ and JDK 21 (if building or testing from source).
+* **Container Engine (optional)**: [Podman](https://podman.io/) or Docker for running local test SSH/SFTP servers.
+
+---
+
+## Development & Test Environment Setup
+
+### 1. IBM webMethods Service Designer
+
+[IBM webMethods Service Designer](https://community.ibm.com/community/user/viewdocument/ibm-webmethods-service-designer-ava?CommunityKey=82b75916-ed06-4a13-8eb6-0190da9f1bfa&tab=librarydocuments) is a free, standalone development environment containing a bundled webMethods Integration Server, Microservices Runtime, and Software AG Designer.
+
+* **Download**: [IBM webMethods Service Designer Availability (Community Download)](https://community.ibm.com/community/user/viewdocument/ibm-webmethods-service-designer-ava?CommunityKey=82b75916-ed06-4a13-8eb6-0190da9f1bfa&tab=librarydocuments)
+* **Installation Directory Structure**:
+  * Bundled JDK: `<ServiceDesigner_Home>/jvm/jvm` (e.g. `C:\wMServiceDesigner\jvm\jvm` on Windows)
+  * Packages Directory: `<ServiceDesigner_Home>/IntegrationServer/packages/`
+  * Inbound Package Releases: `<ServiceDesigner_Home>/IntegrationServer/replicate/inbound/`
+  * Package State & Config: `<ServiceDesigner_Home>/IntegrationServer/packages/WxSshAdapter/config/`
+
+---
+
+### 2. Apache Maven & Java SDK Configuration
+
+Building the project requires **Apache Maven 3.9+** and a **JDK 21** compiler (`javac`).
+
+#### Setting JAVA_HOME
+> **Important**: Ensure `JAVA_HOME` points to a full **JDK** containing `bin/javac` and `bin/jar`, not a JRE. You can use the bundled JDK from Service Designer or any standard JDK 21 (IBM Semeru, Eclipse Temurin, Oracle JDK).
+
+- **Windows (PowerShell)**:
+  ```powershell
+  # Using the bundled Service Designer JDK
+  $env:JAVA_HOME = 'C:\wMServiceDesigner\jvm\jvm'
+  # Or using system-installed JDK 21
+  $env:JAVA_HOME = 'C:\Program Files\IBM\ibm-semeru-certified-21-jdk'
+  ```
+- **Linux / macOS (Bash)**:
+  ```bash
+  export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+  # Or IBM Semeru:
+  # export JAVA_HOME=/opt/ibm/semeru-certified-21-jdk
+  ```
+
+#### Maven Build & Test Commands
+
+* **Compile Source Code**:
+  ```bash
+  mvn -B clean compile
+  ```
+  Compiles the ADK-free core SSHJ facade as well as the ADK adapter services and notifications against `lib/wmart-classes.jar`.
+* **Run Fast Unit Tests**:
+  ```bash
+  mvn -B test
+  ```
+  Executes all 146 Surefire unit tests (covering settings validation, glob matching, retry logic, shell script drivers, expect stream buffers, and directory poller state logic).
+* **Run Full Suite including Integration Tests (IT)**:
+  ```bash
+  mvn -B clean verify
+  ```
+  Executes all unit tests and 170 Failsafe integration tests against an embedded in-memory Apache SSHD server (validates real channel concurrency, port forwards, SCP, SFTP browsing/operations, host key trust, and live directory polling).
+
+---
+
+### 3. Local OpenSSH Server with Podman
+
+[Podman](https://podman.io/) is a daemonless, rootless container engine that makes it simple to spin up isolated OpenSSH / SFTP test instances on Windows, Linux, and macOS without altering host SSH services.
+
+#### Quickstart: Run an OpenSSH Server Container
+
+Run the following command to spin up an OpenSSH container with password authentication on port `2222`:
+
+```bash
+# Create local data directory for file sharing
+mkdir -p /tmp/sftp_data/in /tmp/sftp_data/archive
+chmod -R 777 /tmp/sftp_data
+
+# Start OpenSSH Server container with Podman
+podman run -d --name openssh-server \
+  -p 2222:2222 \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e USER_NAME=sftpuser \
+  -e USER_PASSWORD=sftppassword \
+  -e PASSWORD_ACCESS=true \
+  -v /tmp/sftp_data:/data:Z \
+  lscr.io/linuxserver/openssh-server:latest
+```
+
+*On Windows PowerShell, use local directories for mounts:*
+```powershell
+New-Item -ItemType Directory -Path "C:\sftp_data\in", "C:\sftp_data\archive" -Force
+podman run -d --name openssh-server -p 2222:2222 -e PUID=1000 -e PGID=1000 -e USER_NAME=sftpuser -e USER_PASSWORD=sftppassword -e PASSWORD_ACCESS=true -v C:\sftp_data:/data:Z lscr.io/linuxserver/openssh-server:latest
+```
+
+#### Connecting Service Designer to the Podman OpenSSH Container
+
+1. Open **Service Designer** and create a new **SSH Connection** (`test.conn:podmanSsh`).
+2. Set the connection parameters:
+   - **Host Name / IP**: `127.0.0.1` (or `localhost`)
+   - **Port Number**: `2222`
+   - **User Name**: `sftpuser`
+   - **Password**: `sftppassword`
+   - **Host Key Policy**: `ACCEPT_ANY` (for quick testing) or use `getHostKeyFingerprint` to discover and pin the SHA-256 fingerprint.
+3. Test your adapter services against `/data` or configure the **Remote Directory Polling Notification** to watch `/data/in` with `postAction=MOVE` to `/data/archive`.
+
+#### Useful Podman Management Commands
+
+```bash
+# Check container status
+podman ps
+
+# View OpenSSH server authentication & session logs
+podman logs -f openssh-server
+
+# Open an interactive shell inside the container
+podman exec -it openssh-server /bin/bash
+
+# Stop and remove container
+podman stop openssh-server && podman rm openssh-server
+```
 
 ---
 
