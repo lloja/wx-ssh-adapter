@@ -75,6 +75,7 @@ if (Test-Path $bcpkix) { Copy-Item $bcpkix -Destination "$pkgDir\code\jars\" -Fo
 
 Write-Host ">>> Creating WxSshAdapter.zip..."
 $zipPath = Join-Path $projectRoot "target\WxSshAdapter.zip"
+$rootZipPath = Join-Path $projectRoot "WxSshAdapter.zip"
 if (Test-Path $zipPath) {
     Remove-Item $zipPath -Force
 }
@@ -84,6 +85,10 @@ if (Test-Path $zipPath) {
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to create WxSshAdapter.zip with jar tool"
 }
+
+# Copy to root directory for repository distribution
+Copy-Item $zipPath -Destination $rootZipPath -Force
+Write-Host "    Saved to $rootZipPath"
 
 Write-Host ">>> Checking the zip content..."
 Add-Type -AssemblyName System.IO.Compression.FileSystem
