@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.luisloja.wxssh</groupId>
+  <artifactId>wx-ssh-core</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>WxSshAdapter - SSHJ facade (ADK-free core)</name>
+  <description>
+    ADK-free core of the webMethods SSH adapter. All SSHJ calls live here so the logic can be
+    unit/integration tested without an Integration Server. The ADK layer is a thin shell over this module.
+  </description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sshj.version>0.40.0</sshj.version>
+    <sshd.version>2.15.0</sshd.version>
+    <junit.version>5.11.4</junit.version>
+    <slf4j.version>2.0.16</slf4j.version>
+    <bc.version>1.79</bc.version>
+    <wm.home>C:/wMServiceDesigner</wm.home>
+  </properties>
+
+  <dependencies>
+    <!-- webMethods ADK & Integration Server runtime dependencies -->
+    <dependency>
+      <groupId>com.wm</groupId>
+      <artifactId>wmart</artifactId>
+      <version>12.1.0</version>
+      <scope>system</scope>
+      <systemPath>${wm.home}/IntegrationServer/packages/WmART/code/jars/wmart.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.resource</groupId>
+      <artifactId>jakarta.resource-api</artifactId>
+      <version>2.1.0</version>
+      <scope>system</scope>
+      <systemPath>${wm.home}/common/lib/glassfish/jakarta.resource-api.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.wm</groupId>
+      <artifactId>wm-isserver</artifactId>
+      <version>12.1.0</version>
+      <scope>system</scope>
+      <systemPath>${wm.home}/IntegrationServer/lib/wm-isserver.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.wm</groupId>
+      <artifactId>wm-isclient</artifactId>
+      <version>12.1.0</version>
+      <scope>system</scope>
+      <systemPath>${wm.home}/common/lib/wm-isclient.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.wm</groupId>
+      <artifactId>wmadapterscommon</artifactId>
+      <version>12.1.0</version>
+      <scope>system</scope>
+      <systemPath>${wm.home}/IntegrationServer/packages/WmART/code/jars/static/wmadapterscommon.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.wm</groupId>
+      <artifactId>wmart-classes</artifactId>
+      <version>12.1.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/wmart-classes.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.hierynomus</groupId>
+      <artifactId>sshj</artifactId>
+      <version>${sshj.version}</version>
+    </dependency>
+
+    <!-- SSHJ declares slf4j-api as runtime scope only; the façade logs through it directly, so declare it. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <!-- Test-only: embedded SSH server, test framework, logging backend -->
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${sshd.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-sftp</artifactId>
+      <version>${sshd.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-scp</artifactId>
+      <version>${sshd.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bc.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bc.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+      <!-- Integration tests (*IT) run in the verify phase. They use an embedded SSH server, no external services. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

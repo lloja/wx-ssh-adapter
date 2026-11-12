@@ -1,0 +1,36 @@
+adapterName : WxSshAdapter
+adapterId : com.wm.adapter.wxssh.WxSshAdapter
+adapterPackage : WxSshAdapter
+adapterImpl : com.wm.adapter.wxssh.WxSshAdapter
+adapterVersion : 1.0
+adapterResourceBundleName : com.wm.adapter.wxssh.WxSshAdapterResourceBundle
+adapterJCAVersion : 1.0
+adapterMajorCode : 20
+connectionTypes :
+  -
+      factory : com.wm.adapter.wxssh.connection.SshConnectionFactory
+      services :
+        - com.wm.adapter.wxssh.service.ExecCommandService
+        - com.wm.adapter.wxssh.service.SftpListService
+        - com.wm.adapter.wxssh.service.SftpGetService
+        - com.wm.adapter.wxssh.service.SftpPutService
+        - com.wm.adapter.wxssh.service.SftpStatService
+        - com.wm.adapter.wxssh.service.SftpExistsService
+        - com.wm.adapter.wxssh.service.SftpRealPathService
+        - com.wm.adapter.wxssh.service.SftpReadLinkService
+        - com.wm.adapter.wxssh.service.SftpMkdirService
+        - com.wm.adapter.wxssh.service.SftpDeleteService
+        - com.wm.adapter.wxssh.service.SftpRmdirService
+        - com.wm.adapter.wxssh.service.SftpRenameService
+        - com.wm.adapter.wxssh.service.SftpSymlinkService
+        - com.wm.adapter.wxssh.service.SftpChmodService
+        - com.wm.adapter.wxssh.service.SftpChownService
+        - com.wm.adapter.wxssh.service.SftpSetTimesService
+        - com.wm.adapter.wxssh.service.SftpTruncateService
+        - com.wm.adapter.wxssh.service.RunShellScriptService
+        - com.wm.adapter.wxssh.service.StartSubsystemService
+        - com.wm.adapter.wxssh.service.ScpUploadService
+        - com.wm.adapter.wxssh.service.ScpDownloadService
+
+notificationTypes :
+ - com.wm.adapter.wxssh.notification.RemoteDirectoryPollNotification

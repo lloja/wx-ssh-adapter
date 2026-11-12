@@ -1,0 +1,15 @@
+target/
+cp.txt
+*.class
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.bob/
+internal-monologue/
+docs/
+HANDOVER.md
+
+README.dev.md
+*.internal.md

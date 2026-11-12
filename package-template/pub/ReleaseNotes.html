@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Release Notes - IBM webMethods Adapter for SSH</title>
+</head>
+<body>
+    <h3>Release Notes - IBM webMethods Adapter for SSH v1.0.0</h3>
+    <ul>
+        <li>Initial release based on SSHJ library.</li>
+        <li>Supports ExecCommand, SftpList, SftpGet, and SftpPut adapter services.</li>
+        <li>Supports the SFTP browse services SftpStat, SftpExists, SftpRealPath, and SftpReadLink.</li>
+        <li>Supports the interactive services RunShellScript (a login shell driven line by line, waiting for the prompt after each) and StartSubsystem (one request and answer with a named SSH subsystem). Both are best-effort: they depend on recognising a prompt or a delimiter.</li>
+
+        <li>Supports the SFTP manage services SftpMkdir, SftpDelete, SftpRmdir, SftpRename, SftpSymlink, SftpChmod, SftpChown, SftpSetTimes, and SftpTruncate.</li>
+        <li>SftpList supports a glob filter, recursion and hiding of dot-files.</li>
+        <li>A per-connection limit on concurrent channels (Max Concurrent Channels) with retry of refused channel opens.</li>
+        <li>Supports Password, Public Key, and Keyboard-Interactive authentication.</li>
+        <li>Supports Known Hosts and Pinned Host Key Fingerprint validation.</li>
+        <li>Supports the SCP services ScpUpload and ScpDownload (files, directory trees and in-memory content).</li>
+        <li>Provides the Integration Server services wm.adapter.wxssh.admin:getHostKeyFingerprint and addToKnownHosts for first-time host-key trust.</li>
+        <li>Provides the polling notification RemoteDirectoryPoll, which publishes a document for each new file in a remote directory (minimum age, stability check, delete/rename/move after delivery, persisted state). Not yet run in Designer.</li>
+    </ul>
+</body>
+</html>

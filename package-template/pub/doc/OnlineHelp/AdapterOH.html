@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Help - IBM webMethods Adapter for SSH</title>
+</head>
+<body>
+    <h2>IBM webMethods Adapter for SSH Documentation</h2>
+    <h3>Connection Properties</h3>
+    <p>Configure Host Name, Port, Authentication Method (Password or Public Key), Host Key verification policy, and Max Concurrent Channels (default 8; keep it at or below the server's own limit, OpenSSH MaxSessions defaults to 10).</p>
+    <h3>Adapter Services</h3>
+    <ul>
+        <li><strong>ExecCommand</strong>: Execute shell commands over SSH channel.</li>
+        <li><strong>SftpList</strong>: List remote directory contents, optionally filtered by a glob, recursive, and with or without hidden entries.</li>
+        <li><strong>SftpGet</strong>: Download file over SFTP.</li>
+        <li><strong>SftpPut</strong>: Upload file over SFTP atomically.</li>
+        <li><strong>SftpStat</strong>: Read size, times, permissions and type of a remote path (optionally without following a symbolic link).</li>
+        <li><strong>SftpExists</strong>: Check whether a remote path exists and what type it is.</li>
+        <li><strong>SftpRealPath</strong>: Resolve a remote path to its canonical absolute form.</li>
+        <li><strong>SftpReadLink</strong>: Read the target of a remote symbolic link.</li>
+        <li><strong>SftpMkdir</strong>: Create a remote directory, optionally with its missing parent directories.</li>
+        <li><strong>SftpDelete</strong>: Delete one remote file or symbolic link (never a directory).</li>
+        <li><strong>SftpRmdir</strong>: Remove a remote directory; with <em>recursive</em> true, everything below it too (refuses /, . and .., never follows symbolic links).</li>
+        <li><strong>SftpRename</strong>: Rename or move a remote path; an existing target is replaced only when <em>overwrite</em> is true, and a directory is never replaced. Rename never creates folders: a missing target folder fails with a message naming it, unless <em>createParents</em> is true.</li>
+        <li><strong>SftpSymlink</strong>: Create a symbolic link on the server.</li>
+        <li><strong>SftpChmod</strong>: Change permission bits; <em>permissions</em> is octal, for example 640 or 0755. With <em>recursive</em> true the whole tree is changed: files get <em>permissions</em>, directories get <em>directoryPermissions</em> (empty = the file mode plus the execute bit wherever read is set, so 640 gives 750); symbolic links are skipped, never followed. Output <em>changed</em> is the number of entries changed.</li>
+        <li><strong>SftpChown</strong>: Change the owner and/or group, by name (<em>userName</em>, <em>groupName</em>) or by number (<em>uid</em>, <em>gid</em>); give either the name or the number for the same account, not both. A name is looked up on the server first (getent, else /etc/passwd or /etc/group), because SFTP itself carries numbers only; accounts known only to LDAP/SSSD need getent. A blank owner or group is left unchanged. With <em>recursive</em> true the whole tree is changed; symbolic links are skipped, never followed. Output <em>changed</em> is the number of entries changed.</li>
+        <li><strong>SftpSetTimes</strong>: Set the modification and/or access time, in seconds since 1970-01-01 UTC.</li>
+        <li><strong>SftpTruncate</strong>: Set the size of a remote file; <em>size</em> is required, send 0 to empty the file.</li>
+        <li><strong>RunShellScript</strong>: Drive an interactive login shell. The <em>script</em> (one step per line) is sent line by line and the service waits for the prompt, recognised by the regular expression <em>promptPattern</em> (for example <code>[$#&gt;%] $</code>), after each. Shell state such as the working directory survives between lines. <em>timeoutSeconds</em> is the wait per step, not for the whole script. A pseudo-terminal is requested by default (<em>allocatePty</em>), because a shell prints its prompt only on a terminal; the output then contains the typed lines (echo) and, with some shells, terminal control sequences. <em>lineEnding</em> is LF, CR or CRLF. Output: <em>transcript</em>, <em>steps</em> (input, output, matched), <em>stderr</em>, <em>completed</em>, <em>timedOut</em>, <em>closedByServer</em>, <em>truncated</em>. A timeout, a shell that ends or reaching the memory limit stops the script and is reported in these fields, not thrown. This is a last resort when ExecCommand is not available and is fragile: the first run against a new target usually needs a tuned prompt pattern.</li>
+        <li><strong>StartSubsystem</strong>: Start a named SSH subsystem (for example <code>netconf</code>), send it one request (<em>input</em> or <em>inputBytes</em>) and return its answer (<em>output</em>, <em>outputBytes</em>). Without <em>expect</em> the input is followed by an end-of-input signal and the answer is read until the server closes the channel; with <em>expect</em> (a regular expression matched against the bytes one-to-one, for example <code>\]\]&gt;\]\]&gt;</code>) the channel stays open until the pattern shows up. Output also has <em>matched</em>, <em>closedByServer</em>, <em>timedOut</em>, <em>truncated</em> and, when the server reported one, <em>exitStatus</em>. A subsystem the server does not offer fails with CHANNEL_FAILED. Only one request and one answer per call; a multi-turn conversation is not supported.</li>
+
+        <li><strong>ScpUpload</strong>: Upload a local file or directory tree (<em>localFilePath</em>), or the <em>bytes</em> / <em>content</em> input, with SCP to <em>remotePath</em>. Use it for servers that offer SCP but not SFTP; prefer SftpPut when SFTP is available. A local directory is refused unless <em>recursive</em> is true. SCP does not create missing parent folders. A directory uploaded to a remote path that does not exist is copied into a new directory of that name; uploaded to an existing directory it is created inside it under its own name, so repeating the same upload nests the second copy. Output: <em>remotePath</em>, <em>bytesWritten</em>.</li>
+        <li><strong>ScpDownload</strong>: Download <em>remotePath</em> with SCP to <em>localFilePath</em>, or, when no local path is given, one file into memory (<em>bytes</em>, <em>content</em>, limited by the connection's in-memory limit). A remote directory is only downloaded when <em>recursive</em> is true (default false: the server refuses it with 'not a regular file' and nothing is created locally), and then only to a local path; if the local path already exists as a directory the download lands inside it. Output: <em>bytes</em>, <em>content</em>, <em>bytesRead</em>, <em>localFilePath</em>.</li>
+    </ul>
+    <h3>Host-key services (Integration Server services)</h3>
+    <p>These two are ordinary Integration Server services in the folder <code>wm.adapter.wxssh.admin</code>, not adapter services, because they have to work before a connection exists.</p>
+    <ul>
+        <li><strong>getHostKeyFingerprint</strong>: Connect to <em>host</em> (<em>port</em> default 22, <em>timeoutSeconds</em> default 10) without logging in and return the offered key: <em>algorithm</em>, <em>fingerprint</em> (SHA256:...) and <em>knownHostsEntry</em>. Compare the fingerprint with one you got from the server's administrator before trusting it.</li>
+        <li><strong>addToKnownHosts</strong>: Add that key to the <em>knownHostsPath</em> file. <em>expectedFingerprint</em> is required: the key is fetched again and nothing is written unless it matches. The file and its folders are created when missing; an identical entry is left alone (<em>added</em> = false); a different key of the same type already listed for the host is refused, never overwritten. Then use the KNOWN_HOSTS host-key policy with that file.</li>
+    </ul>
+    <h3>Notification: RemoteDirectoryPoll</h3>
+    <p>Watches <em>Directory</em> on the server and publishes one document (<em>path</em>, <em>name</em>, <em>directory</em>, <em>size</em>, <em>modifiedSec</em>, <em>contentSkipped</em>, and with Include Content also <em>contentBytes</em> and <em>content</em>) for each new file. A file counts as new by path, size and modification time and is not delivered again unless it changes. Files younger than <em>Minimum Age</em> are left alone; with <em>Stability Check</em> (default on) a file is only taken when its size and time are unchanged on two consecutive runs. After delivery the file can be left, deleted, renamed (suffix) or moved (directory; an existing file there is never overwritten). Delivery is at least once. The record of delivered files is a local file (<em>State File</em>), so in a cluster enable the notification on one node only.</p>
+</body>
+</html>
