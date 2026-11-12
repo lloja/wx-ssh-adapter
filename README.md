@@ -84,16 +84,21 @@ To compile and package `WxSshAdapter` from source:
    cd wx-ssh-adapter
    ```
 2. Build the core library and execute the test suite:
-   ```powershell
-   # Point JAVA_HOME to a JDK 21
-   $env:JAVA_HOME = 'C:\wMServiceDesigner\jvm\jvm'
+   ```bash
+   # Point JAVA_HOME to JDK 21
    mvn clean verify
    ```
 3. Run the automated packaging script:
-   ```powershell
-   .\build-package.ps1
-   ```
-   This script gathers runtime dependencies (`sshj-0.40.0.jar`, `asn-one-0.6.0.jar`, Bouncy Castle), compiles ADK classes, builds `WxSshAdapter.zip`, and automatically deploys it to your local Service Designer environment.
+   - **On Windows (PowerShell):**
+     ```powershell
+     .\build-package.ps1
+     ```
+   - **On Linux / macOS (Bash):**
+     ```bash
+     chmod +x build-package.sh
+     ./build-package.sh
+     ```
+   This script gathers runtime dependencies (`sshj-0.40.0.jar`, `asn-one-0.6.0.jar`, Bouncy Castle), compiles ADK classes, builds `WxSshAdapter.zip`, and copies it to the repository root for distribution. If a local webMethods Integration Server directory is detected, it also deploys the package directly.
 
 ---
 

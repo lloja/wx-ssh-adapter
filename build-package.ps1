@@ -50,6 +50,10 @@ Write-Host ">>> Copying runtime dependencies..."
 if ($LASTEXITCODE -ne 0) {
     throw "Maven copy-dependencies failed"
 }
+& mvn -B dependency:copy-dependencies "-DincludeArtifactIds=bcprov-jdk18on,bcpkix-jdk18on" -DoutputDirectory=target/bc-jars
+if ($LASTEXITCODE -ne 0) {
+    throw "Maven copy-dependencies for Bouncy Castle failed"
+}
 
 $pkgDir = Join-Path $projectRoot "target\package\WxSshAdapter"
 if (Test-Path $pkgDir) {
@@ -67,11 +71,8 @@ Copy-Item "$projectRoot\target\classes\*" -Destination "$pkgDir\code\classes" -R
 Write-Host ">>> Copying jar dependencies..."
 Copy-Item "$projectRoot\target\runtime-jars\sshj-*.jar" -Destination "$pkgDir\code\jars\" -Force
 Copy-Item "$projectRoot\target\runtime-jars\asn-one-*.jar" -Destination "$pkgDir\code\jars\" -Force
-
-$bcprov = "$env:USERPROFILE\.m2\repository\org\bouncycastle\bcprov-jdk18on\1.79\bcprov-jdk18on-1.79.jar"
-$bcpkix = "$env:USERPROFILE\.m2\repository\org\bouncycastle\bcpkix-jdk18on\1.79\bcpkix-jdk18on-1.79.jar"
-if (Test-Path $bcprov) { Copy-Item $bcprov -Destination "$pkgDir\code\jars\" -Force }
-if (Test-Path $bcpkix) { Copy-Item $bcpkix -Destination "$pkgDir\code\jars\" -Force }
+Copy-Item "$projectRoot\target\bc-jars\bcprov-*.jar" -Destination "$pkgDir\code\jars\" -Force
+Copy-Item "$projectRoot\target\bc-jars\bcpkix-*.jar" -Destination "$pkgDir\code\jars\" -Force
 
 Write-Host ">>> Creating WxSshAdapter.zip..."
 $zipPath = Join-Path $projectRoot "target\WxSshAdapter.zip"
