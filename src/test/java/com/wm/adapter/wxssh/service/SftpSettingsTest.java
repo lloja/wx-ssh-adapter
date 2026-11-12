@@ -195,8 +195,8 @@ class SftpSettingsTest {
         SftpSettings.AccountRef r = SftpSettings.resolveAccount("userName", "uid", "", "7", "panelUser", "");
         assertNull(r.name());
         assertEquals(7L, r.id());
-        SftpSettings.AccountRef n = SftpSettings.resolveAccount("userName", "uid", "bob", "", "", "9");
-        assertEquals("bob", n.name());
+        SftpSettings.AccountRef n = SftpSettings.resolveAccount("userName", "uid", "alice", "", "", "9");
+        assertEquals("alice", n.name());
         assertNull(n.id());
         SftpSettings.AccountRef p = SftpSettings.resolveAccount("userName", "uid", null, null, "panelUser", "");
         assertEquals("panelUser", p.name());
@@ -205,7 +205,7 @@ class SftpSettingsTest {
     @Test
     void accountNameAndIdInOneSourceAreRefusedNamingBothFields() {
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> SftpSettings.resolveAccount("userName", "uid", "bob", "5", null, null));
+                () -> SftpSettings.resolveAccount("userName", "uid", "alice", "5", null, null));
         assertTrue(e.getMessage().contains("userName") && e.getMessage().contains("uid"), e.getMessage());
         assertThrows(IllegalArgumentException.class,
                 () -> SftpSettings.resolveAccount("groupName", "gid", null, null, "staff", "20"));
